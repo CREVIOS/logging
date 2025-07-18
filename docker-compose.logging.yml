@@ -5,7 +5,7 @@ services:
     container_name: centralized-loki
     ports:
       - "3100:3100"
-    command: -config.file=/etc/loki/local-config.yaml
+    command: -config.file=/etc/loki/local-config.yml
     volumes:
       - ./loki/config:/etc/loki
       - loki-data:/tmp/loki
@@ -26,6 +26,7 @@ services:
   grafana:
     image: grafana/grafana:10.1.0
     container_name: centralized-grafana
+    user: "root"
     ports:
       - "3000:3000"
     environment:

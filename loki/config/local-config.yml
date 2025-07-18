@@ -1,9 +1,9 @@
-# loki/config/local-config.yaml
 auth_enabled: false
 
 server:
   http_listen_port: 3100
   grpc_listen_port: 9096
+  log_level: info
 
 common:
   path_prefix: /tmp/loki
@@ -22,30 +22,81 @@ query_range:
     cache:
       embedded_cache:
         enabled: true
-        max_size_mb: 100
+        max_size_mb: 256
+        ttl: 1h
+  split_queries_by_interval: 30m
+  max_retries: 5
 
 schema_config:
   configs:
-    - from: 2020-10-24
-      store: boltdb-shipper
+    - from: 2024-01-01
+      store: tsdb
       object_store: filesystem
-      schema: v11
+      schema: v12
       index:
         prefix: index_
         period: 24h
 
-ruler:
-  alertmanager_url: http://localhost:9093
-
-# Add specific configuration for template and tabular services
 limits_config:
   enforce_metric_name: false
   reject_old_samples: true
-  reject_old_samples_max_age: 168h
+  reject_old_samples_max_age: 168h  # 7 days
   max_cache_freshness_per_query: 10m
   split_queries_by_interval: 15m
   
-# Table manager for retention
-table_manager:
-  retention_deletes_enabled: true
+  # Ingestion limits
+  ingestion_rate_mb: 16
+  ingestion_burst_size_mb: 32
+  max_line_size: 256kb
+  max_streams_per_user: 10000
+  max_global_streams_per_user: 5000
+  
+  # Query limits
+  max_query_parallelism: 32
+  max_query_series: 500
+  max_query_length: 12000h
+  
+  # Retention
   retention_period: 168h  # 7 days
+
+compactor:
+  working_directory: /tmp/loki/compactor
+  shared_store: filesystem
+  compaction_interval: 10m
+  retention_enabled: true
+  retention_delete_delay: 2h
+  retention_delete_worker_count: 150
+
+ruler:
+  storage:
+    type: local
+    local:
+      directory: /tmp/loki/rules
+  rule_path: /tmp/loki/rules
+  alertmanager_url: http://alertmanager:9093
+  ring:
+    kvstore:
+      store: inmemory
+  enable_api: true
+
+frontend:
+  max_outstanding_per_tenant: 2048
+  compress_responses: true
+
+querier:
+  max_concurrent: 20
+  query_timeout: 1m
+
+ingester:
+  max_chunk_age: 1h
+  chunk_idle_period: 30m
+  chunk_retain_period: 1m
+  lifecycler:
+    address: 127.0.0.1
+    ring:
+      kvstore:
+        store: inmemory
+      replication_factor: 1
+
+analytics:
+  reporting_enabled: false
