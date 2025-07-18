@@ -1,0 +1,193 @@
+# promtail/config/config.yml
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+
+scrape_configs:
+  # Template Services Log Collection
+  - job_name: template-backend-api
+    docker_sd_configs:
+      - host: unix:///var/run/docker.sock
+        refresh_interval: 5s
+    relabel_configs:
+      - source_labels: ['__meta_docker_container_name']
+        regex: 'template-backend-api'
+        target_label: __keep__
+      - source_labels: ['__meta_docker_container_name']
+        target_label: container_name
+      - source_labels: ['__meta_docker_container_name']
+        target_label: service
+        replacement: 'template-backend'
+      - source_labels: ['__meta_docker_container_name']
+        target_label: component
+        replacement: 'api'
+      - source_labels: ['__meta_docker_container_name']
+        target_label: stack
+        replacement: 'template'
+
+  - job_name: template-celery-worker
+    docker_sd_configs:
+      - host: unix:///var/run/docker.sock
+        refresh_interval: 5s
+    relabel_configs:
+      - source_labels: ['__meta_docker_container_name']
+        regex: 'template-backend-celery-worker'
+        target_label: __keep__
+      - source_labels: ['__meta_docker_container_name']
+        target_label: container_name
+      - source_labels: ['__meta_docker_container_name']
+        target_label: service
+        replacement: 'template-backend'
+      - source_labels: ['__meta_docker_container_name']
+        target_label: component
+        replacement: 'celery-worker'
+      - source_labels: ['__meta_docker_container_name']
+        target_label: stack
+        replacement: 'template'
+
+  - job_name: template-celery-beat
+    docker_sd_configs:
+      - host: unix:///var/run/docker.sock
+        refresh_interval: 5s
+    relabel_configs:
+      - source_labels: ['__meta_docker_container_name']
+        regex: 'template-backend-celery-beat'
+        target_label: __keep__
+      - source_labels: ['__meta_docker_container_name']
+        target_label: container_name
+      - source_labels: ['__meta_docker_container_name']
+        target_label: service
+        replacement: 'template-backend'
+      - source_labels: ['__meta_docker_container_name']
+        target_label: component
+        replacement: 'celery-beat'
+      - source_labels: ['__meta_docker_container_name']
+        target_label: stack
+        replacement: 'template'
+
+  - job_name: template-nginx
+    docker_sd_configs:
+      - host: unix:///var/run/docker.sock
+        refresh_interval: 5s
+    relabel_configs:
+      - source_labels: ['__meta_docker_container_name']
+        regex: 'template-backend-nginx-ssl'
+        target_label: __keep__
+      - source_labels: ['__meta_docker_container_name']
+        target_label: container_name
+      - source_labels: ['__meta_docker_container_name']
+        target_label: service
+        replacement: 'template-backend'
+      - source_labels: ['__meta_docker_container_name']
+        target_label: component
+        replacement: 'nginx'
+      - source_labels: ['__meta_docker_container_name']
+        target_label: stack
+        replacement: 'template'
+
+  # Tabular Services Log Collection
+  - job_name: tabular-backend-api
+    docker_sd_configs:
+      - host: unix:///var/run/docker.sock
+        refresh_interval: 5s
+    relabel_configs:
+      - source_labels: ['__meta_docker_container_name']
+        regex: 'tabular-bakcend-backend'
+        target_label: __keep__
+      - source_labels: ['__meta_docker_container_name']
+        target_label: container_name
+      - source_labels: ['__meta_docker_container_name']
+        target_label: service
+        replacement: 'tabular-review'
+      - source_labels: ['__meta_docker_container_name']
+        target_label: component
+        replacement: 'api'
+      - source_labels: ['__meta_docker_container_name']
+        target_label: stack
+        replacement: 'tabular'
+
+  - job_name: tabular-celery-worker
+    docker_sd_configs:
+      - host: unix:///var/run/docker.sock
+        refresh_interval: 5s
+    relabel_configs:
+      - source_labels: ['__meta_docker_container_name']
+        regex: 'tabular-bakcend-celery-worker'
+        target_label: __keep__
+      - source_labels: ['__meta_docker_container_name']
+        target_label: container_name
+      - source_labels: ['__meta_docker_container_name']
+        target_label: service
+        replacement: 'tabular-review'
+      - source_labels: ['__meta_docker_container_name']
+        target_label: component
+        replacement: 'celery-worker'
+      - source_labels: ['__meta_docker_container_name']
+        target_label: stack
+        replacement: 'tabular'
+
+  - job_name: tabular-celery-beat
+    docker_sd_configs:
+      - host: unix:///var/run/docker.sock
+        refresh_interval: 5s
+    relabel_configs:
+      - source_labels: ['__meta_docker_container_name']
+        regex: 'tabular-bakcend-celery-beat'
+        target_label: __keep__
+      - source_labels: ['__meta_docker_container_name']
+        target_label: container_name
+      - source_labels: ['__meta_docker_container_name']
+        target_label: service
+        replacement: 'tabular-review'
+      - source_labels: ['__meta_docker_container_name']
+        target_label: component
+        replacement: 'celery-beat'
+      - source_labels: ['__meta_docker_container_name']
+        target_label: stack
+        replacement: 'tabular'
+
+  - job_name: tabular-nginx
+    docker_sd_configs:
+      - host: unix:///var/run/docker.sock
+        refresh_interval: 5s
+    relabel_configs:
+      - source_labels: ['__meta_docker_container_name']
+        regex: 'tabular-review-nginx-ssl'
+        target_label: __keep__
+      - source_labels: ['__meta_docker_container_name']
+        target_label: container_name
+      - source_labels: ['__meta_docker_container_name']
+        target_label: service
+        replacement: 'tabular-review'
+      - source_labels: ['__meta_docker_container_name']
+        target_label: component
+        replacement: 'nginx'
+      - source_labels: ['__meta_docker_container_name']
+        target_label: stack
+        replacement: 'tabular'
+
+  # Generic docker container logs for any missed services
+  - job_name: docker-generic
+    docker_sd_configs:
+      - host: unix:///var/run/docker.sock
+        refresh_interval: 5s
+    relabel_configs:
+      - source_labels: ['__meta_docker_container_name']
+        regex: '(template-backend-.*|tabular-bakcend-.*)'
+        target_label: __keep__
+      - source_labels: ['__meta_docker_container_name']
+        target_label: container_name
+      - source_labels: ['__meta_docker_container_name']
+        regex: '(template-backend-.*)'
+        target_label: stack
+        replacement: 'template'
+      - source_labels: ['__meta_docker_container_name']
+        regex: '(tabular-bakcend-.*)'
+        target_label: stack
+        replacement: 'tabular'
